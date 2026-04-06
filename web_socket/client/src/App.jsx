@@ -25,7 +25,7 @@ const SOCKET_SERVER_URL =
   import.meta.env.VITE_SOCKET_SERVER_URL ||
   (window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://exp73-chat-server.onrender.com");
+    : "https://exp7-3-chat-box.onrender.com");
 
 // This line creates one socket connection to the backend server.
 // We place it outside the App component so the connection is created once and can be reused.

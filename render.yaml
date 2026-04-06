@@ -19,7 +19,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_SOCKET_SERVER_URL
-        value: https://exp73-chat-server.onrender.com
+        value: https://exp7-3-chat-box.onrender.com
     routes:
       - type: rewrite
         source: /*
