@@ -19,9 +19,13 @@ import { io } from "socket.io-client";
 import "./App.css";
 
 // The socket server URL comes from Vite environment variables in production.
-// When running locally, the fallback still points to the local backend.
+// If no env var is present, use localhost during local development and the hosted
+// Render backend when the app is running on Vercel or another public domain.
 const SOCKET_SERVER_URL =
-  import.meta.env.VITE_SOCKET_SERVER_URL || "http://localhost:5000";
+  import.meta.env.VITE_SOCKET_SERVER_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://exp73-chat-server.onrender.com");
 
 // This line creates one socket connection to the backend server.
 // We place it outside the App component so the connection is created once and can be reused.
