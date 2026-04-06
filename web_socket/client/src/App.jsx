@@ -18,11 +18,16 @@ import { io } from "socket.io-client";
 // This also keeps the project more organized.
 import "./App.css";
 
+// The socket server URL comes from Vite environment variables in production.
+// When running locally, the fallback still points to the local backend.
+const SOCKET_SERVER_URL =
+  import.meta.env.VITE_SOCKET_SERVER_URL || "http://localhost:5000";
+
 // This line creates one socket connection to the backend server.
 // We place it outside the App component so the connection is created once and can be reused.
 // The URL points to the Express server that is running Socket.io on port 5000.
-const socket = io("http://localhost:5000", {
-  transports: ["websocket"]
+const socket = io(SOCKET_SERVER_URL, {
+  transports: ["websocket"],
 });
 
 // This function component is the main chat screen of the React application.

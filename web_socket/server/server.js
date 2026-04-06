@@ -18,6 +18,12 @@ import cors from "cors";
 // This is the part that powers instant message delivery.
 import { Server } from "socket.io";
 
+// These environment variables let the app work both locally and on Render.
+// In development, we fall back to localhost.
+// In production, Render can provide the frontend URL and port automatically.
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const PORT = Number(process.env.PORT) || 5000;
+
 // This line creates the Express application object.
 // The app object lets us register middleware and routes.
 // Think of it as the main backend app.
@@ -31,18 +37,14 @@ const server = http.createServer(app);
 // This middleware allows requests from the React client.
 // The frontend runs on localhost:3000, so we allow that origin explicitly.
 // This keeps the server open only to the expected development client.
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-  })
-);
+app.use(cors({ origin: CLIENT_URL }));
 
 // This block creates the Socket.io server.
 // We attach it to the HTTP server so Socket.io can handle real-time client connections.
 // The CORS settings here also allow the React app to open the socket connection from port 3000.
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: CLIENT_URL,
     methods: ["GET", "POST"],
   },
 });
@@ -95,14 +97,9 @@ io.on("connection", (socket) => {
   });
 });
 
-// This constant stores the port number used by the backend server.
-// Keeping it in one variable makes it easy to change later.
-// Port 5000 is common for a local API or socket server in tutorials.
-const PORT = 5000;
-
 // This starts the HTTP server and also activates the attached Socket.io server.
 // Once this runs, the backend begins listening for both browser requests and socket connections.
 // The callback simply prints a message so we know the server started successfully.
 server.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });

@@ -61,3 +61,10 @@ http://localhost:5000
 - Node.js + Express server in a separate folder
 - Detailed comments that explain what, why, and how
 - Basic UI for learning how Socket.io works
+
+## Deploy on Render
+
+- Use the repo root as the Render repository root.
+- The backend service root directory is `server`.
+- The frontend static site root directory is `client`.
+- This repo now includes `render.yaml`, so Render can create both services from the correct folders.
