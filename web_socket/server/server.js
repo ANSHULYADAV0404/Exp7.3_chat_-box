@@ -18,11 +18,43 @@ import cors from "cors";
 // This is the part that powers instant message delivery.
 import { Server } from "socket.io";
 
-// These environment variables let the app work both locally and on Render.
-// In development, we fall back to localhost.
-// In production, Render can provide the frontend URL and port automatically.
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+// These environment variables let the app work both locally and on hosting platforms.
+// We support multiple allowed frontend origins because the client might be served from
+// local development, Vercel preview links, or a production domain.
+const DEFAULT_ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://exp7-3-chat-box.vercel.app",
+];
+
+const allowedOrigins = (
+  process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(",")
+    : DEFAULT_ALLOWED_ORIGINS
+)
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const PORT = Number(process.env.PORT) || 5000;
+
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  return allowedOrigins.some((allowedOrigin) => {
+    if (allowedOrigin.includes("*")) {
+      const pattern = new RegExp(
+        `^${allowedOrigin
+          .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+          .replace(/\\\*/g, ".*")}$`
+      );
+      return pattern.test(origin);
+    }
+
+    return allowedOrigin === origin;
+  });
+}
 
 // This line creates the Express application object.
 // The app object lets us register middleware and routes.
@@ -34,17 +66,34 @@ const app = express();
 // This is a very common pattern in real-time Node applications.
 const server = http.createServer(app);
 
-// This middleware allows requests from the React client.
-// The frontend runs on localhost:3000, so we allow that origin explicitly.
-// This keeps the server open only to the expected development client.
-app.use(cors({ origin: CLIENT_URL }));
+// This middleware allows requests from approved frontend origins.
+// Using a callback lets the same backend accept local development and hosted frontends.
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
+  })
+);
 
 // This block creates the Socket.io server.
 // We attach it to the HTTP server so Socket.io can handle real-time client connections.
 // The CORS settings here also allow the React app to open the socket connection from port 3000.
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by Socket.io CORS`));
+    },
     methods: ["GET", "POST"],
   },
 });

@@ -27,7 +27,8 @@ const SOCKET_SERVER_URL =
 // We place it outside the App component so the connection is created once and can be reused.
 // The URL points to the Express server that is running Socket.io on port 5000.
 const socket = io(SOCKET_SERVER_URL, {
-  transports: ["websocket"],
+  transports: ["websocket", "polling"],
+  reconnection: true,
 });
 
 // This function component is the main chat screen of the React application.
